@@ -1,3 +1,4 @@
+/* Modified by jo9900 (2026): float window idle styles. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -18,9 +19,15 @@
     @apply bg-[#f7f5f2] dark:bg-stone-950;
   }
 
-  /* Float window background is handled by set_window_background (Rust)
-     so title bar and content share the same single layer of transparency */
+  /* Float window has no native decorations; its background is painted by
+     DanmakuFloat so it can fade out when the window is idle. */
+  html:has(body.float-window),
   body.float-window {
+    background: transparent !important;
+  }
+
+  /* Hide the scrollbar while the float window is idle. */
+  body.float-idle ::-webkit-scrollbar-thumb {
     background: transparent !important;
   }
 

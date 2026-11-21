@@ -1,3 +1,4 @@
+// Modified by jo9900 (2026): added `inputHidden` for the float window idle state.
 import { Send, Trash2 } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
 import type { DanmakuItem } from "@/context/AppContext";
@@ -97,6 +98,8 @@ interface DanmakuStreamViewProps {
 	onEmoteLoaded?: (map: Record<string, string>) => void;
 	/** Called on emote-load and send failures; omit for silent failures (float window). */
 	onError?: (message: string) => void;
+	/** Fade out the input bar (float window when unfocused). Keeps its layout space. */
+	inputHidden?: boolean;
 }
 
 export default function DanmakuStreamView({
@@ -107,6 +110,7 @@ export default function DanmakuStreamView({
 	compact = false,
 	onEmoteLoaded,
 	onError,
+	inputHidden = false,
 }: DanmakuStreamViewProps) {
 	const [input, setInput] = useState("");
 	const [emoteMap, setEmoteMap] = useState<Record<string, string>>({});
@@ -141,7 +145,8 @@ export default function DanmakuStreamView({
 	const handleScroll = () => {
 		const el = scrollRef.current;
 		if (!el) return;
-		isAtBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 30;
+		isAtBottomRef.current =
+			el.scrollHeight - el.scrollTop - el.clientHeight < 30;
 	};
 
 	const handleSend = async () => {
@@ -178,7 +183,9 @@ export default function DanmakuStreamView({
 				))}
 			</div>
 			<div
-				className={`shrink-0 ${
+				className={`shrink-0 transition-opacity duration-200 ${
+					inputHidden ? "opacity-0 pointer-events-none" : "opacity-100"
+				} ${
 					compact
 						? "px-4 py-3 border-t border-stone-200/40 dark:border-stone-700/40"
 						: "px-6 py-4"
