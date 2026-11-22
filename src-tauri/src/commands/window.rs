@@ -56,6 +56,10 @@ pub async fn open_danmaku_float(
 ) -> Result<(), String> {
     // If already open, focus and return
     if let Some(win) = app_handle.get_webview_window("danmaku-float") {
+        // The float window skips the taskbar, so after "minimize" (custom
+        // title bar button) this is the only way back: restore it first.
+        let _ = win.unminimize();
+        let _ = win.show();
         let _ = win.set_focus();
         return Ok(());
     }
