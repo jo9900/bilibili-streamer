@@ -100,6 +100,8 @@ interface DanmakuStreamViewProps {
 	onError?: (message: string) => void;
 	/** Fade out the input bar (float window when unfocused). Keeps its layout space. */
 	inputHidden?: boolean;
+	/** Fade out the message list (float window after a long idle). */
+	listHidden?: boolean;
 }
 
 export default function DanmakuStreamView({
@@ -111,6 +113,7 @@ export default function DanmakuStreamView({
 	onEmoteLoaded,
 	onError,
 	inputHidden = false,
+	listHidden = false,
 }: DanmakuStreamViewProps) {
 	const [input, setInput] = useState("");
 	const [emoteMap, setEmoteMap] = useState<Record<string, string>>({});
@@ -171,7 +174,9 @@ export default function DanmakuStreamView({
 			<div
 				ref={scrollRef}
 				onScroll={handleScroll}
-				className={`flex-1 overflow-y-auto space-y-1 ${compact ? "px-4 pt-8 pb-2" : "px-6 py-3"}`}
+				className={`flex-1 overflow-y-auto space-y-1 transition-opacity duration-500 ${
+					listHidden ? "opacity-0" : "opacity-100"
+				} ${compact ? "px-4 pt-8 pb-2" : "px-6 py-3"}`}
 			>
 				{messages.map((item) => (
 					<DanmakuStreamItem

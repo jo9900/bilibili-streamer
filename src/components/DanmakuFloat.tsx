@@ -1,5 +1,6 @@
 // Modified by jo9900 (2026): custom auto-hiding title bar and fully
-// transparent idle state for the float window.
+// transparent idle state for the float window; danmaku bubbles also fade out
+// after 10s without activity.
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { Minus, X } from "lucide-react";
 import { type MouseEvent, useEffect, useState } from "react";
@@ -12,13 +13,32 @@ import { closeDanmakuFloat, windowDrag, windowMin } from "@/hooks/useTauri";
  * background, input bar) is drawn here and only shown while the window is
  * focused or hovered. Otherwise only the danmaku bubbles are visible, and
  * with no danmaku the window is fully transparent.
+ *
+ * After IDLE_HIDE_MS without focus, hover or a new danmaku the bubbles fade
+ * out too, so nothing is drawn on screen. Any of those three brings them back.
  */
+const IDLE_HIDE_MS = 10_000;
+
 export default function DanmakuFloat() {
 	const { danmakuList, clearDanmaku } = useDanmaku();
 	const { user } = useUser();
 	const [focused, setFocused] = useState(true);
 	const [hovered, setHovered] = useState(false);
 	const active = focused || hovered;
+	const [dormant, setDormant] = useState(false);
+	// Id of the newest danmaku; changes whenever a new one arrives.
+	const newestId = Math.max(
+		danmakuList[0]?.id ?? -1,
+		danmakuList[danmakuList.length - 1]?.id ?? -1,
+	);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: newestId restarts the idle timer
+	useEffect(() => {
+		setDormant(false);
+		if (active) return;
+		const timer = setTimeout(() => setDormant(true), IDLE_HIDE_MS);
+		return () => clearTimeout(timer);
+	}, [active, newestId]);
 
 	useEffect(() => {
 		document.body.classList.add("float-window");
@@ -101,6 +121,7 @@ export default function DanmakuFloat() {
 				onClear={clearDanmaku}
 				compact
 				inputHidden={!active}
+				listHidden={dormant}
 			/>
 		</div>
 	);
