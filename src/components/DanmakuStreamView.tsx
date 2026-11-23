@@ -1,3 +1,4 @@
+// Modified by jo9900 (2026): added `inputHidden` for the float window idle state.
 import { Send, Trash2 } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
 import type { DanmakuItem } from "@/context/AppContext";
@@ -97,6 +98,10 @@ interface DanmakuStreamViewProps {
 	onEmoteLoaded?: (map: Record<string, string>) => void;
 	/** Called on emote-load and send failures; omit for silent failures (float window). */
 	onError?: (message: string) => void;
+	/** Fade out the input bar (float window when unfocused). Keeps its layout space. */
+	inputHidden?: boolean;
+	/** Fade out the message list (float window after a long idle). */
+	listHidden?: boolean;
 }
 
 export default function DanmakuStreamView({
@@ -107,6 +112,8 @@ export default function DanmakuStreamView({
 	compact = false,
 	onEmoteLoaded,
 	onError,
+	inputHidden = false,
+	listHidden = false,
 }: DanmakuStreamViewProps) {
 	const [input, setInput] = useState("");
 	const [emoteMap, setEmoteMap] = useState<Record<string, string>>({});
@@ -141,7 +148,8 @@ export default function DanmakuStreamView({
 	const handleScroll = () => {
 		const el = scrollRef.current;
 		if (!el) return;
-		isAtBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 30;
+		isAtBottomRef.current =
+			el.scrollHeight - el.scrollTop - el.clientHeight < 30;
 	};
 
 	const handleSend = async () => {
@@ -166,7 +174,9 @@ export default function DanmakuStreamView({
 			<div
 				ref={scrollRef}
 				onScroll={handleScroll}
-				className={`flex-1 overflow-y-auto space-y-1 ${compact ? "px-4 pt-8 pb-2" : "px-6 py-3"}`}
+				className={`flex-1 overflow-y-auto space-y-1 transition-opacity duration-500 ${
+					listHidden ? "opacity-0" : "opacity-100"
+				} ${compact ? "px-4 pt-8 pb-2" : "px-6 py-3"}`}
 			>
 				{messages.map((item) => (
 					<DanmakuStreamItem
@@ -178,7 +188,9 @@ export default function DanmakuStreamView({
 				))}
 			</div>
 			<div
-				className={`shrink-0 ${
+				className={`shrink-0 transition-opacity duration-200 ${
+					inputHidden ? "opacity-0 pointer-events-none" : "opacity-100"
+				} ${
 					compact
 						? "px-4 py-3 border-t border-stone-200/40 dark:border-stone-700/40"
 						: "px-6 py-4"

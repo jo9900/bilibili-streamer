@@ -1,3 +1,5 @@
+// Modified by jo9900 (2026): float window is undecorated; the frontend draws
+// its own auto-hiding title bar.
 use crate::services::float_geometry::{self, WindowGeometry};
 use crate::state::AppState;
 use tauri::Manager;
@@ -54,6 +56,10 @@ pub async fn open_danmaku_float(
 ) -> Result<(), String> {
     // If already open, focus and return
     if let Some(win) = app_handle.get_webview_window("danmaku-float") {
+        // The float window skips the taskbar, so after "minimize" (custom
+        // title bar button) this is the only way back: restore it first.
+        let _ = win.unminimize();
+        let _ = win.show();
         let _ = win.set_focus();
         return Ok(());
     }
@@ -67,24 +73,21 @@ pub async fn open_danmaku_float(
     // Build the window with a logical fallback size. The physical size will be
     // applied after creation so that restored values (which are physical) are
     // respected regardless of the monitor's scale factor.
-    let mut builder = tauri::WebviewWindowBuilder::new(
+    let builder = tauri::WebviewWindowBuilder::new(
         &app_handle,
         "danmaku-float",
         tauri::WebviewUrl::App("/".into()),
     )
     .title("Monitor")
-    .decorations(true)
+    // No native title bar: DanmakuFloat draws its own bar that hides when the
+    // window is unfocused, so the overlay does not block the screen.
+    .decorations(false)
     .always_on_top(true)
     .skip_taskbar(true)
     .transparent(true)
     .shadow(false)
     .resizable(true)
     .inner_size(320.0, 450.0);
-
-    #[cfg(target_os = "macos")]
-    {
-        builder = builder.title_bar_style(tauri::TitleBarStyle::Transparent);
-    }
 
     let window = builder.build().map_err(|e| e.to_string())?;
 
