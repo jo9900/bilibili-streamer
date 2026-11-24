@@ -4,6 +4,14 @@ on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+*'
+  # Manual run: builds the selected branch and publishes a release tagged
+  # v<version from tauri.conf.json>, creating the tag if it does not exist.
+  workflow_dispatch:
+    inputs:
+      draft:
+        description: 'Create the release as a draft'
+        type: boolean
+        default: false
 
 jobs:
   check-version:
@@ -14,7 +22,12 @@ jobs:
 
       - name: Check version consistency
         run: |
-          TAG=${GITHUB_REF_NAME#v}
+          # On a manual run there is no tag; the release is tagged from tauri.conf.json.
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            TAG=${GITHUB_REF_NAME#v}
+          else
+            TAG=$(jq -r '.version' src-tauri/tauri.conf.json)
+          fi
           PKG=$(jq -r '.version' package.json)
           TAURI=$(jq -r '.version' src-tauri/tauri.conf.json)
           CARGO=$(grep '^version' src-tauri/Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
@@ -85,23 +98,42 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
+      # Updater artifacts need TAURI_SIGNING_PRIVATE_KEY. Without it (e.g. in a
+      # fork) build plain installers instead of failing at the signing step.
+      - name: Resolve build args
+        id: build
+        shell: bash
+        env:
+          SIGNING_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          ARGS='${{ matrix.args }}'
+          if [ -z "$SIGNING_KEY" ]; then
+            echo '{"bundle":{"createUpdaterArtifacts":false}}' > no-updater.conf.json
+            ARGS="$ARGS --config no-updater.conf.json"
+            echo "updater=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "updater=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "args=$ARGS" >> "$GITHUB_OUTPUT"
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: 'Bilibili-Streamer ${{ github.ref_name }}'
+          tagName: v__VERSION__
+          releaseName: 'Bilibili-Streamer v__VERSION__'
           releaseBody: |
-            ## Bilibili-Streamer ${{ github.ref_name }}
+            ## Bilibili-Streamer v__VERSION__
 
             ### Downloads
             - **macOS** (Intel & Apple Silicon): `.dmg`
-            - **Windows**: `.msi` installer
+            - **Windows**: `-setup.exe` installer (or `.msi`)
             - **Linux**: `.AppImage`
 
             > **Windows users:** If SmartScreen shows a warning, click "More info" → "Run anyway". This is normal for unsigned open-source software.
-          releaseDraft: false
+          releaseDraft: ${{ inputs.draft || false }}
+          includeUpdaterJson: ${{ steps.build.outputs.updater }}
           prerelease: false
-          args: ${{ matrix.args }}
+          args: ${{ steps.build.outputs.args }}
