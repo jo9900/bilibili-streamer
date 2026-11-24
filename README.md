@@ -8,6 +8,16 @@
 
 ![主界面](screenshot-stream.png)
 
+## 关于本 Fork
+
+本仓库 fork 自 [Zeppelinpp/bilibili-streamer](https://github.com/Zeppelinpp/bilibili-streamer)（基于上游 v1.0.9），感谢原作者。在上游基础上做了以下改动：
+
+- **弹幕悬浮窗空闲自动隐藏**：无操作时标题栏自动隐藏，窗口变为完全透明；
+- **弹幕气泡自动淡出**：弹幕在 10 秒无新消息后淡出；
+- **修复悬浮窗无法恢复**：悬浮窗最小化后再次打开时会正常恢复显示；
+- **检查更新改为本仓库**：「检查更新」检查本仓库的 Releases，有新版本时打开下载页面（不再自动下载安装）；
+- **构建与发布**：新增功能分支的 Windows 测试构建，安装包发布在本仓库的 [Releases](https://github.com/jo9900/bilibili-streamer/releases) 页面。
+
 ## 功能
 
 1. 扫码登录 B 站账号，支持多账号切换；
@@ -28,13 +38,13 @@
 
 ### macOS
 
-1. 前往 [Releases](https://github.com/Zeppelinpp/bilibili-streamer/releases/latest) 页面下载最新版 `.dmg`；
+1. 前往 [Releases](https://github.com/jo9900/bilibili-streamer/releases/latest) 页面下载最新版 `.dmg`；
 2. 双击打开 `.dmg`，将 `Bilibili-Streamer.app` 拖入 **应用程序** 文件夹；
 3. 首次运行时若提示"无法打开"，前往 **系统设置 → 隐私与安全性**，点击 **仍要打开**。
 
 ### Windows & Linux
 
-1. 前往 [Releases](https://github.com/Zeppelinpp/bilibili-streamer/releases/latest) 页面下载对应平台的安装包（Windows 为 `.msi` 或 `.exe`，Linux 为 `.AppImage`）；
+1. 前往 [Releases](https://github.com/jo9900/bilibili-streamer/releases/latest) 页面下载对应平台的安装包（Windows 为 `.msi` 或 `.exe`，Linux 为 `.AppImage`）；
 2. 按系统提示完成安装，或右键 `.AppImage` 选择 **属性 → 允许作为程序执行** 后双击运行。
 
 ## 使用教程

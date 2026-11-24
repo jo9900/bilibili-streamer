@@ -26,10 +26,9 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
-      # Updater artifacts need the upstream signing key, which forks don't have.
       - name: Build NSIS installer
         shell: bash
-        run: npx tauri build --bundles nsis --config '{"bundle":{"createUpdaterArtifacts":false}}'
+        run: npx tauri build --bundles nsis
 
       - name: Upload installer and portable exe
         uses: actions/upload-artifact@v4

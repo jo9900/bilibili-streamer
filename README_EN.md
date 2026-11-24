@@ -6,6 +6,16 @@ A third-party Bilibili live streaming desktop app rebuilt with [Tauri](https://t
 
 ![Main Interface](screenshot-stream.png)
 
+## About This Fork
+
+This repository is a fork of [Zeppelinpp/bilibili-streamer](https://github.com/Zeppelinpp/bilibili-streamer) (based on upstream v1.0.9). Thanks to the original author. Changes on top of upstream:
+
+- **Idle auto-hide for the danmaku float window**: the title bar hides and the window turns fully transparent when idle;
+- **Danmaku bubbles fade out**: bubbles fade after 10 seconds without new messages;
+- **Float window restore fix**: a minimized float window is restored when reopened;
+- **Update check uses this repository**: "Check for updates" looks at this repository's Releases and opens the download page when a newer version exists (no in-place install);
+- **Build and release**: a Windows test build for feature branches, with installers published on this repository's [Releases](https://github.com/jo9900/bilibili-streamer/releases) page.
+
 ## Features
 
 1. Log in to Bilibili via QR code, with support for switching between multiple accounts;
@@ -26,7 +36,7 @@ A third-party Bilibili live streaming desktop app rebuilt with [Tauri](https://t
 
 ### macOS
 
-1. Go to the [Releases](https://github.com/Zeppelinpp/bilibili-streamer/releases/latest) page and download the latest `.dmg`;
+1. Go to the [Releases](https://github.com/jo9900/bilibili-streamer/releases/latest) page and download the latest `.dmg`;
 2. Open the `.dmg` and drag `Bilibili-Streamer.app` into the **Applications** folder;
 3. If a warning says the app cannot be opened on first launch, go to **System Settings → Privacy & Security** and click **Open Anyway**.
 

@@ -4,7 +4,7 @@ import {
 	checkUpdate,
 	getAppConfig,
 	getVersion,
-	installUpdate,
+	openReleasePage,
 	setAppConfig,
 } from "@/hooks/useTauri";
 
@@ -52,16 +52,10 @@ export default function SettingsPanel() {
 			const info = await checkUpdate();
 			if (info.available && info.version) {
 				const confirmed = window.confirm(
-					`发现新版本 ${info.version}${info.body ? `\n\n${info.body}` : ""}\n\n是否下载并重启应用？`,
+					`发现新版本 ${info.version}${info.body ? `\n\n${info.body}` : ""}\n\n是否打开下载页面？`,
 				);
-				if (confirmed) {
-					setUpdateStatus("正在下载更新...");
-					await installUpdate((progress) => {
-						setUpdateStatus(`正在下载更新... ${Math.round(progress * 100)}%`);
-					});
-				} else {
-					setUpdateStatus("");
-				}
+				if (confirmed) await openReleasePage(info.url);
+				setUpdateStatus("");
 			} else {
 				setUpdateStatus("当前已是最新版本");
 				setTimeout(() => setUpdateStatus(""), 2000);

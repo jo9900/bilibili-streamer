@@ -1,6 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { relaunch } from "@tauri-apps/plugin-process";
-import { check } from "@tauri-apps/plugin-updater";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import type {
 	AppConfig,
 	LoginResult,
@@ -10,52 +9,61 @@ import type {
 	UserConfig,
 } from "@/types/api";
 
+const RELEASES_API =
+	"https://api.github.com/repos/jo9900/bilibili-streamer/releases/latest";
+const RELEASES_PAGE =
+	"https://github.com/jo9900/bilibili-streamer/releases/latest";
+
 export interface UpdateInfo {
 	available: boolean;
 	version?: string;
 	body?: string;
-	date?: string;
+	/** Release page to open for downloading the new version. */
+	url?: string;
 }
 
-export async function checkUpdate(): Promise<UpdateInfo> {
-	const update = await check();
-	if (update) {
-		return {
-			available: true,
-			version: update.version,
-			body: update.body,
-			date: update.date,
-		};
+/** True when dotted version `a` is greater than `b` (numeric parts only). */
+function isNewerVersion(a: string, b: string): boolean {
+	const parse = (v: string) =>
+		v
+			.replace(/^v/, "")
+			.split(/[.-]/)
+			.map((n) => Number.parseInt(n, 10) || 0);
+	const pa = parse(a);
+	const pb = parse(b);
+	for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+		const diff = (pa[i] ?? 0) - (pb[i] ?? 0);
+		if (diff !== 0) return diff > 0;
 	}
-	return { available: false };
+	return false;
 }
 
-export async function installUpdate(
-	onProgress?: (progress: number) => void,
-): Promise<void> {
-	const update = await check();
-	if (!update) return;
-
-	let total = 0;
-	let downloaded = 0;
-
-	await update.downloadAndInstall((event) => {
-		switch (event.event) {
-			case "Started":
-				total = event.data.contentLength ?? 0;
-				break;
-			case "Progress":
-				downloaded += event.data.chunkLength;
-				if (total > 0 && onProgress) {
-					onProgress(downloaded / total);
-				}
-				break;
-			case "Finished":
-				if (onProgress) onProgress(1);
-				break;
-		}
+// Builds are unsigned, so updates are not installed in place: compare against
+// the latest GitHub release and send the user to its download page.
+export async function checkUpdate(): Promise<UpdateInfo> {
+	const res = await fetch(RELEASES_API, {
+		headers: { Accept: "application/vnd.github+json" },
 	});
-	await relaunch();
+	// 404 means no release has been published yet.
+	if (res.status === 404) return { available: false };
+	if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+	const release = (await res.json()) as {
+		tag_name: string;
+		body?: string;
+		html_url?: string;
+	};
+	const current = await getVersion();
+	if (!isNewerVersion(release.tag_name, current)) return { available: false };
+	return {
+		available: true,
+		version: release.tag_name.replace(/^v/, ""),
+		body: release.body,
+		url: release.html_url ?? RELEASES_PAGE,
+	};
+}
+
+export async function openReleasePage(url?: string): Promise<void> {
+	await openUrl(url ?? RELEASES_PAGE);
 }
 
 export async function getLoginQrcode(): Promise<QrCodeData> {
