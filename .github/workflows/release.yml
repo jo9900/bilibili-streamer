@@ -98,29 +98,9 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
-      # Updater artifacts need TAURI_SIGNING_PRIVATE_KEY. Without it (e.g. in a
-      # fork) build plain installers instead of failing at the signing step.
-      - name: Resolve build args
-        id: build
-        shell: bash
-        env:
-          SIGNING_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-        run: |
-          ARGS='${{ matrix.args }}'
-          if [ -z "$SIGNING_KEY" ]; then
-            echo '{"bundle":{"createUpdaterArtifacts":false}}' > no-updater.conf.json
-            ARGS="$ARGS --config no-updater.conf.json"
-            echo "updater=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "updater=true" >> "$GITHUB_OUTPUT"
-          fi
-          echo "args=$ARGS" >> "$GITHUB_OUTPUT"
-
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: v__VERSION__
           releaseName: 'Bilibili-Streamer v__VERSION__'
@@ -134,6 +114,6 @@ jobs:
 
             > **Windows users:** If SmartScreen shows a warning, click "More info" → "Run anyway". This is normal for unsigned open-source software.
           releaseDraft: ${{ inputs.draft || false }}
-          includeUpdaterJson: ${{ steps.build.outputs.updater }}
+          includeUpdaterJson: false
           prerelease: false
-          args: ${{ steps.build.outputs.args }}
+          args: ${{ matrix.args }}

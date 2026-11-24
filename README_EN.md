@@ -26,7 +26,7 @@ A third-party Bilibili live streaming desktop app rebuilt with [Tauri](https://t
 
 ### macOS
 
-1. Go to the [Releases](https://github.com/Zeppelinpp/bilibili-streamer/releases/latest) page and download the latest `.dmg`;
+1. Go to the [Releases](https://github.com/jo9900/bilibili-streamer/releases/latest) page and download the latest `.dmg`;
 2. Open the `.dmg` and drag `Bilibili-Streamer.app` into the **Applications** folder;
 3. If a warning says the app cannot be opened on first launch, go to **System Settings → Privacy & Security** and click **Open Anyway**.
 

@@ -83,7 +83,7 @@ Draft release notes in markdown:
 
 <summary of changes from git log>
 
-**Full Changelog**: https://github.com/Zeppelinpp/bilibili-streamer/compare/v<previous-version>...v<version>
+**Full Changelog**: https://github.com/jo9900/bilibili-streamer/compare/v<previous-version>...v<version>
 ```
 
 Publish the release using the GitHub CLI:
@@ -93,7 +93,7 @@ gh release create v<version> --title "Bilibili-Streamer v<version>" --notes-file
 
 <changes>
 
-**Full Changelog**: https://github.com/Zeppelinpp/bilibili-streamer/compare/v<previous-version>...v<version>
+**Full Changelog**: https://github.com/jo9900/bilibili-streamer/compare/v<previous-version>...v<version>
 EOF
 ```
 
